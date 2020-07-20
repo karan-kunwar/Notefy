@@ -1,5 +1,6 @@
 
-Backend/env
+Backend/db.sqlite
+Backend/Pipfile
+Backend/Pipfile.lock
 .vscode
-Backend/__pycache__
-Backend/resources/__pycache__
+
