@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'constants.dart';
 import 'screens/HomeScreen.dart';
+import 'screens/RegisterUser.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -12,9 +14,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'notefy',
       theme: ThemeData().copyWith(primaryColor: Colors.white),
-      home: FirstScreen(),
+      home: RegisterScreen(),
     );
   }
+
 }
 class FirstScreen extends StatelessWidget {
   @override

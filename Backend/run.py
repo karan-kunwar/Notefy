@@ -2,17 +2,24 @@ from flask import Flask, request, jsonify
 from app import db, ma, app
 from register_model import product_schema_register, products_schema_register, Register
 import os
+import random
+import string
 
+
+def generate_key():
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(40))
 ##POST
 @app.route('/register',methods = ['POST'])
 def register_user():
-    username= request.json['username']
-    email = request.json['email']
-    firstname = request.json['firstname']
-    lastname = request.json['lastname']
-    password = request.json['password']
+    values = request.get_json(force=True)
+    api_key = generate_key()
+    username= values['username']
+    email = values['email']
+    firstname = values['firstname']
+    lastname = values['lastname']
+    password = values['password']
 
-    new_user = Register(username, email, firstname,lastname, password)
+    new_user = Register(api_key, username, email, firstname,lastname, password)
     db.session.add(new_user)
     db.session.commit()
     return product_schema_register.jsonify(new_user)
@@ -29,6 +36,15 @@ def get_users():
 def get_user(id):
     user = Register.query.get(id)
     return product_schema_register.jsonify(user)
+
+##Adding Deleting
+@app.route('/register/<id>',methods = ['DELETE'])
+def delete_user(id):
+    user = Register.query.get(id)
+    db.session.delete(user)
+    db.session.commit()
+    return product_schema_register.jsonify(user)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
