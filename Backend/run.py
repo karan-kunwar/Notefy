@@ -45,6 +45,5 @@ def delete_user(id):
     db.session.commit()
     return product_schema_register.jsonify(user)
 
-
 if __name__ == '__main__':
     app.run(debug=True)
