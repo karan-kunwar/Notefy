@@ -45,5 +45,19 @@ def delete_user(id):
     db.session.commit()
     return product_schema_register.jsonify(user)
 
+##GET Single User
+@app.route('/signin',methods = ['POST'])
+def signin_user():
+    values = request.get_json(force=True)
+    password = values['password']
+    user = Register.query.filter_by(username=values['username']).first()
+    if user:
+        if (user.password == password):
+            return product_schema_register.jsonify(user)
+        else:
+            return {'message':'Password is incorrect'}, 400
+    else:
+        return {'message':"Username doesn't exist"}, 400
+
 if __name__ == '__main__':
     app.run(debug=True)

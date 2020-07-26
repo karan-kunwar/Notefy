@@ -1,11 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:notefy/models/classes/user.dart';
 import 'package:notefy/constants.dart';
 
-Future<UserData> createUser(String firstname, String lastname, String username,
+Future<String> createUser(String firstname, String lastname, String username,
     String email, String password) async {
   final String apiUrl = 'http://127.0.0.1:5000/register';
   final response = await http.post(apiUrl,
@@ -16,7 +16,14 @@ Future<UserData> createUser(String firstname, String lastname, String username,
         "lastname": lastname,
         "password": password
       }));
-  print(response.statusCode);
+  var parsedJson = json.decode(response.body);
+  if(response.statusCode/10==20){
+    print(response.statusCode);
+    print(parsedJson['api_key']);
+     return parsedJson['api_key'];
+  }else{
+    return null;
+  }
 }
 
 class RegisterScreen extends StatefulWidget {
@@ -30,8 +37,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController username = TextEditingController();
-
   bool _autoValidate = false;
+  bool _obscureText = true;
+  void _toggleHideUnhide() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -90,10 +102,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(
                   height: 10,
                 ),
-                TextFormField(
-                  controller: password,
-                  decoration: createInputDecor('Set Password'),
-                  keyboardType: TextInputType.visiblePassword,
+                Column(
+                  children: <Widget>[
+                    new TextFormField(
+                      controller: password,
+                      decoration: createInputDecor('Password'),
+                      validator: (val) => val.length < 6 ? 'Password too short.' : null,
+                      obscureText: _obscureText,
+                    ),
+                    new FlatButton(
+                        onPressed: _toggleHideUnhide,
+                        child: new Text(_obscureText ? "Show" : "Hide"))
+                  ],
                 ),
                 SizedBox(
                   height: 10,
@@ -113,8 +133,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         final String un = username.text;
                         final String em = email.text;
                         final String ps = password.text;
-                        createUser(firstname.text, lastname.text, username.text,
+                        String apikey = await createUser(firstname.text, lastname.text, username.text,
                             email.text, password.text);
+                        print("Called");
+                        _saveApiKey(apikey);
                       }
                     }
                 ),
@@ -125,7 +147,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-
+  void _saveApiKey(String apikey) async {
+    final storage = new FlutterSecureStorage();
+    await storage.write(key: 'api_key', value: apikey);
+    print('Saved');
+  }
   bool _validateInputs() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
@@ -136,33 +162,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     }
   }
-
-  String validateEmail(String value) {
-    Pattern pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
-    else
-      return null;
-  }
-
-  String validateName(String value) {
-    if (value.length < 3)
-      return 'Increase Length';
-    else
-      return null;
-  }
-}
-
-InputDecoration createInputDecor(String hintText) {
-  return InputDecoration(
-    labelText: "Enter $hintText",
-    fillColor: Colors.white,
-    border: new OutlineInputBorder(
-      borderRadius: new BorderRadius.circular(25.0),
-      borderSide: new BorderSide(),
-    ),
-    //fillColor: Colors.green
-  );
 }

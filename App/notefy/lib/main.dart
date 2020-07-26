@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:notefy/screens/loginScreen.dart';
 import 'constants.dart';
 import 'screens/HomeScreen.dart';
 import 'screens/RegisterUser.dart';
@@ -8,17 +10,41 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Widget screen1 = FirstScreen();
+  Future<Null> getApiKey() async {
+    final storage = new FlutterSecureStorage();
+    final all = await storage.readAll();
+    setState(() {
+      if(all.isEmpty){
+        screen1 = RegisterScreen();
+      }
+      else{
+        print(all.values);
+      }
+    });
+  }
+  @override
+  void initState() {
+    getApiKey();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'notefy',
       theme: ThemeData().copyWith(primaryColor: Colors.white),
-      home: RegisterScreen(),
+      home: LoginScreen(),
     );
   }
-
 }
+
 class FirstScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -47,19 +73,19 @@ class FirstScreen extends StatelessWidget {
             title: new TabBar(
               tabs: [
                 Tab(
-                  icon: new Icon(Icons.home,size: 35,),
+                  icon: new Icon(Icons.home,size: 45,),
                 ),
                 Tab(
-                  icon: new Icon(Icons.rss_feed, size: 40,),
+                  icon: new Icon(Icons.rss_feed, size: 45,),
                 ),
                 Tab(
-                  icon: new Icon(Icons.perm_identity,size: 35,),
+                  icon: new Icon(Icons.perm_identity,size: 55,),
                 ),
               ],
               labelColor: kOrange,
               unselectedLabelColor: Colors.black,
               indicatorSize: TabBarIndicatorSize.label,
-              indicatorPadding: EdgeInsets.all(5.0),
+              indicatorPadding: EdgeInsets.all(25.0),
               indicatorColor: Colors.white,
             ),
           ),
